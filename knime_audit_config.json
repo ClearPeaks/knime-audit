@@ -1,0 +1,22 @@
+{
+	"ca_cert_file" : "",
+	"knime_rest_api_port": "8443",
+	"knime_rest_api_user": "",
+	"knime_rest_api_password": "",
+	"knime_logs_path": "",
+	"log_file_generation_delay_seconds": 5,
+	"workflow_backup_path": "",
+	"log_file": "/path/to/knime_audit.log",
+	"log_level": "INFO",
+	"log_rotation_when": "d",
+	"log_rotation_interval": 1,
+	"log_rotation_keep": 90,
+	"temporary_extraction_path": "/tmp/knime_audit/",
+	"max_audit_paths": 10,
+	"files_to_keep": [
+		"settings.xml", "workflow.knime", "workflow.svg", "workflowset.meta",
+		"workflow-configuration-representation.json", "workflow-configuration.json"
+	],
+	"activemq_url": "",
+	"activemq_queue_name" : ""
+}

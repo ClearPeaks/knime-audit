@@ -1,0 +1,12 @@
+[Unit]
+Description=KNIME Audit
+After=network.target knime-server.service
+
+[Service]
+Type=simple
+
+ExecStart=/bin/sh -c '/opt/data/knime/knime_audit/main.py'
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target
