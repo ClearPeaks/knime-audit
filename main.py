@@ -230,7 +230,8 @@ def main() -> None:
             workflow_state=job_info["state"],
             workflow_timestamp=job_info["createdAt"].split("[")[0],
             error_message=job_info["nodeMessages"][-1]["message"] if "nodeMessages" in job_info and len(job_info["nodeMessages"]) > 0 else "",
-            paths=paths
+            paths=paths,
+            audit_path=''.join(os.path.split(knwf_file_path)[:-1])  # Path to backup job folder
         )
         logger.info(f"Send audit info for job {job_id}:\n{audit_info.as_xml()}")
         Container(AuditSender(audit_info, config, logger)).run()

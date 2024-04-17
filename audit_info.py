@@ -11,7 +11,8 @@ class AuditInfo:
             workflow_state: str,
             workflow_timestamp: str,
             error_message: str,
-            paths: List[str]
+            paths: List[str],
+            audit_path: str
     ) -> None:
         self.job_id = job_id
         self.user_id = user_id
@@ -20,6 +21,7 @@ class AuditInfo:
         self.workflow_timestamp = workflow_timestamp
         self.error_message = error_message
         self.paths = paths
+        self.audit_path = audit_path
 
     def as_xml(self) -> str:
         """
@@ -44,6 +46,7 @@ class AuditInfo:
                     <additionalInfo name="jobId">{self.job_id}</additionalInfo>
                     <additionalInfo name="errorMessage">{self.error_message}</additionalInfo>
                     <additionalInfo name="paths">{','.join(self.paths)}</additionalInfo>
+                    <additionalInfo name="audit_path">{self.audit_path}</additionalInfo>
                     <timestamp>{self.workflow_timestamp}</timestamp>
                 </action>
             </auditEvent>
