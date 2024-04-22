@@ -233,7 +233,7 @@ def main() -> None:
             paths=paths,
             audit_path=''.join(os.path.split(knwf_file_path)[:-1])  # Path to backup job folder
         )
-        logger.info(f"Send audit info for job {job_id}:\n{audit_info.as_xml()}")
+        logger.info(f"Send audit info for job {job_id}")
         Container(AuditSender(audit_info, config, logger)).run()
 
 
