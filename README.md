@@ -1,16 +1,16 @@
 # knime-audit
 
 This repository contains a Python application to monitor job executions in a KNIME Server using its REST API.
-For each job executed is created a backup folder containing job information, workflow summary and a knwf file that 
+For each job executed, the application creates a backup folder containing job information, workflow summary and a knwf file that 
 can be imported in the KNIME Server to recreate the workflow that has been executed.
-The main idea is to monitor who is executing every job, even if the user deletes the job or the workflow in the server.
-In addition to creating the backup folder, a XML containing the job information is sent to an ActiveMQ queue.
+The main idea is to monitor who is executing each job, even if the user deletes the job or the workflow in the server.
+In addition to creating the backup folder, a XML containing the job information is sent to an ActiveMQ queue for auditing purposes.
 
 # Overview
 
 The code can be summarized in the following steps:
 
-1. Create a thread that is going to tail the Knime Server tomcat logs.  
+1. Create a thread that is going to tail the KNIME Server tomcat logs.  
 2. The thread is going to extract the job_id from the logs and send it to a [thread-safe FIFO queue](https://docs.python.org/es/3/library/queue.html).  
 3. The main thread is going to retrieve the job_id and perform the following steps.  
 4. Use the `GET https://<serverurl>:<port>/knime/rest/v4/jobs/{job_id}` to retrieve job information.  
@@ -27,16 +27,16 @@ The code has been designed for a Python 3.6 version. The requirements include th
 - `requests` to perform the API calls.  
 - `python-qpid-proton` to send the XML to the ActiveMQ queue.  
 
-The QPID Proton client, as it is based on C, requires some additional packages in order to work:
+The QPID Proton client, as it is based on C, requires some additional packages in order to work (below provided for RPM-based systems, for others check QPID Proton documentation):
 
-- `python36-devel`
-- `openssl-devel` optionally if you need SSL
+- `python36-devel` `gcc` `gcc-c++` `make` `cmake` `libuuid-devel`
+- `openssl-devel` `cyrus-sasl-devel` `cyrus-sasl-plain` `cyrus-sasl-md5` optionally if you need SSL
 
 # Installation in Knime Server
 
 With root privileges do the following:
 
-1. Clone or copy the repository into the KNIME Server.  
+1. Clone or copy this repository into the KNIME Server.  
 2. Ensure the bash script is executable: `chmod u+x knime_audit.sh`  
 3. Edit the `knime_audit_config.json` accordingly.  
 4. Ensure you have a valid Python3 environment with the requirements mentioned above installed.  
@@ -46,4 +46,3 @@ With root privileges do the following:
     systemctl daemon-reload
     systemctl enable knime-audit.service
     ```
-
