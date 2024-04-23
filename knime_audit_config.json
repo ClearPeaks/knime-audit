@@ -1,5 +1,6 @@
 {
 	"ca_cert_file" : "",
+	"cert_file": "",
 	"key_file": "",
 	"key_password": "",
 	"knime_rest_api_port": "8443",

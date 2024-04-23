@@ -19,6 +19,7 @@ class AuditSender(MessagingHandler):
         self.urls = config["activemq_urls"]
         self.queue = config["activemq_queue_name"]
         self.ca_cert_file = config["ca_cert_file"]
+        self.cert_file = config["cert_file"]
         self.key_file = config["key_file"]
         self.key_password = config["key_password"]
         self.body = audit_info.as_xml()
@@ -33,7 +34,7 @@ class AuditSender(MessagingHandler):
         """
         self.logger.info("Establishing SSL connectivity with AMQ")
         ssl_domain = SSLDomain(SSLDomain.MODE_CLIENT)
-        ssl_domain.set_credentials(self.ca_cert_file, self.key_file, self.key_password)
+        ssl_domain.set_credentials(self.cert_file, self.key_file, self.key_password)
         ssl_domain.set_trusted_ca_db(self.ca_cert_file)
         conn = event.container.connect(urls=self.urls, ssl_domain=ssl_domain)
         event.container.create_sender(conn, self.queue)
