@@ -5,7 +5,7 @@ After=network.target knime-server.service
 [Service]
 Type=simple
 
-ExecStart=/bin/sh -c '/opt/data/knime/knime_audit/main.py'
+ExecStart=/bin/sh -c '/opt/data/knime/knime_audit/knime_audit.sh'
 TimeoutStartSec=0
 
 [Install]
