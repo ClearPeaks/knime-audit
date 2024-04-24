@@ -4,6 +4,7 @@ import os.path
 import queue
 import shutil
 import socket
+import time
 import zipfile
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
@@ -199,13 +200,13 @@ def main() -> None:
 
     q = queue.Queue()
 
-    logger.info("Start log reader thread")
-    LogReaderThread(q, config, logger).start()
-
     logger.info("Initializing KNIME Rest API object")
     knime_rest_api = KnimeRestApi(config, logger)
     knime_rest_api.list_jobs()  # test if connectivity fails
     logger.info("Successfully reached KNIME Rest API")
+
+    logger.info("Start log reader thread")
+    LogReaderThread(q, config, logger).start()
 
     # Create backup folder if it does not exist
     backup_path = config["workflow_backup_path"]
@@ -214,42 +215,48 @@ def main() -> None:
 
     # Process each job_id received from the log reader
     for job_id in iter(q.get, None):
-        logger.info(f"Processing job: {job_id}")
-        # Get job information & workflow summary
-        job_info = knime_rest_api.get_job_info(job_id)
-        workflow_summary = knime_rest_api.get_workflow_summary(job_id)
-        # Generate backup
-        knwf_file_path = generate_job_backup(
-            job_id,
-            job_info,
-            workflow_summary,
-            backup_path,
-            knime_rest_api,
-            logger
-        )
-        # Get paths from knwf
-        paths = extract_knwf_info(
-            job_id,
-            job_info["workflow"].split("/")[-1],
-            knwf_file_path,
-            config["temporary_extraction_path"],
-            config["max_audit_paths"],
-            config["files_to_keep"],
-            logger
-        )
-        # Send audit message
-        audit_info = AuditInfo(
-            job_id=job_id,
-            user_id=job_info["owner"],
-            host=socket.gethostname(),
-            workflow_state=job_info["state"],
-            workflow_timestamp=job_info["createdAt"].split("[")[0],
-            error_message=job_info["nodeMessages"][-1]["message"] if "nodeMessages" in job_info and len(job_info["nodeMessages"]) > 0 else "",
-            paths=paths,
-            audit_path=''.join(os.path.split(knwf_file_path)[:-1])  # Path to backup job folder
-        )
-        logger.info(f"Send audit info for job {job_id}")
-        Container(AuditSender(audit_info, config, logger)).run()
+        try:
+            logger.info(f"Processing job: {job_id}")
+            # Get job information & workflow summary
+            job_info = knime_rest_api.get_job_info(job_id)
+            workflow_summary = knime_rest_api.get_workflow_summary(job_id)
+            # Generate backup
+            knwf_file_path = generate_job_backup(
+                job_id,
+                job_info,
+                workflow_summary,
+                backup_path,
+                knime_rest_api,
+                logger
+            )
+            # Get paths from knwf
+            paths = extract_knwf_info(
+                job_id,
+                job_info["workflow"].split("/")[-1],
+                knwf_file_path,
+                config["temporary_extraction_path"],
+                config["max_audit_paths"],
+                config["files_to_keep"],
+                logger
+            )
+            # Send audit message
+            audit_info = AuditInfo(
+                job_id=job_id,
+                user_id=job_info["owner"],
+                host=socket.gethostname(),
+                workflow_state=job_info["state"],
+                workflow_timestamp=job_info["createdAt"].split("[")[0],
+                error_message=job_info["nodeMessages"][-1]["message"] if "nodeMessages" in job_info and len(job_info["nodeMessages"]) > 0 else "",
+                paths=paths,
+                audit_path=''.join(os.path.split(knwf_file_path)[:-1])  # Path to backup job folder
+            )
+            logger.info(f"Send audit info for job {job_id}")
+            Container(AuditSender(audit_info, config, logger)).run()
+        except Exception as e:
+            logger.exception(e)
+            logger.error(f"Unexpected error while processing job {job_id}. Waiting a few seconds to keep processing.")
+            q.put(job_id)  # Add again the job_id to be processed again
+            time.sleep(10)
 
 
 if __name__ == '__main__':
