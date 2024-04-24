@@ -1,3 +1,5 @@
+import logging
+
 import requests
 
 
@@ -6,7 +8,7 @@ class KnimeRestApi:
     Class to interact with KNIME Rest API
     """
 
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: dict,  logger: logging.Logger) -> None:
         """
         Constructor
         :param config: configuration settings
@@ -18,6 +20,8 @@ class KnimeRestApi:
         self.headers = {"accept": "application/vnd.mason+json"}
         self.auth = (config["knime_rest_api_user"], config["knime_rest_api_password"])  # Basic authentication
         self.verify = config["ca_cert_file"]
+        self.timeout = config["knime_rest_api_timeout_seconds"]
+        self.logger = logger
 
     def get_job_info(self, job_id: str) -> dict:
         """
@@ -26,26 +30,19 @@ class KnimeRestApi:
         :return: job information in dict
         """
         url = f"{self.base_url}/jobs/{job_id}"
-        response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify)
+        self.logger.info(f"Performing API call to {url}")
+        response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
         return response.json()
 
-    def trigger_swap(self, job_id: str) -> None:
+    def get_workflow_summary(self, job_id: str) -> dict:
         """
-        Trigger swap & creation of workflow summary.
-        This is done to force the swap to reduce the waiting time and ensure the workflow summary is contained
-        :param job_id: job_id
+        Get workflow summary from a finished job_id
+        :return: workflow summary in dict
         """
-        url = f"{self.base_url}/jobs/{job_id}/swap"
-        requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify)
-
-    def copy_job_in_repo(self, job_id: str, path: str) -> None:
-        """
-        Copy job as workflow in server repository path, so users can't delete the job
-        :param job_id: job_id to be copied as workflow
-        :param path: server path to store the workflow files
-        """
-        url = f"{self.base_url}/repository/{path}:data?from-job={job_id}"
-        requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify)
+        url = f"{self.base_url}/jobs/{job_id}/workflow-summary?format=JSON&includeExecutionInfo=true"
+        self.logger.info(f"Performing API call to {url}")
+        response = requests.get(url, headers={"accept": "application/json"}, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        return response.json()
 
     def download_workflow_data(self, path: str) -> bytes:
         """
@@ -54,17 +51,29 @@ class KnimeRestApi:
         :return: workflow .knwf file from response as bytes
         """
         url = f"{self.base_url}/repository/{path}:data"
-        response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify)
+        self.logger.info(f"Performing API call to {url}")
+        response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
         return response.content
 
-    def get_workflow_summary(self, job_id: str) -> dict:
+    def trigger_swap(self, job_id: str) -> None:
         """
-        Get workflow summary from a finished job_id
-        :return: workflow summary in dict
+        Trigger swap & creation of workflow summary.
+        This is done to force the swap to reduce the waiting time and ensure the workflow summary is contained
+        :param job_id: job_id
         """
-        url = f"{self.base_url}/jobs/{job_id}/workflow-summary?format=JSON&includeExecutionInfo=true"
-        response = requests.get(url, headers={"accept": "application/json"}, auth=self.auth, verify=self.verify)
-        return response.json()
+        url = f"{self.base_url}/jobs/{job_id}/swap"
+        self.logger.info(f"Performing API call to {url}")
+        requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+
+    def copy_job_in_repo(self, job_id: str, path: str) -> None:
+        """
+        Copy job as workflow in server repository path, so users can't delete the job
+        :param job_id: job_id to be copied as workflow
+        :param path: server path to store the workflow files
+        """
+        url = f"{self.base_url}/repository/{path}:data?from-job={job_id}"
+        self.logger.info(f"Performing API call to {url}")
+        requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
 
     def delete_workflow_data(self, path: str) -> None:
         """
@@ -72,4 +81,5 @@ class KnimeRestApi:
         :param path: workflow path
         """
         url = f"{self.base_url}/repository/{path}"
-        requests.delete(url, headers=self.headers, auth=self.auth, verify=self.verify)
+        self.logger.info(f"Performing API call to {url}")
+        requests.delete(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)

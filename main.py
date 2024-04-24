@@ -190,7 +190,7 @@ def main() -> None:
     logger.info("Start log reader thread")
     LogReaderThread(q, config, logger).start()
 
-    knime_rest_api = KnimeRestApi(config)
+    knime_rest_api = KnimeRestApi(config, logger)
 
     # Create backup folder if it does not exist
     backup_path = config["workflow_backup_path"]
