@@ -187,13 +187,13 @@ def main() -> None:
 
     q = queue.Queue()
 
-    logger.info("Start log reader thread")
-    LogReaderThread(q, config, logger).start()
-
     logger.info("Initializing KNIME Rest API object")
     knime_rest_api = KnimeRestApi(config, logger)
     knime_rest_api.list_jobs()  # test if connectivity fails
     logger.info("Successfully reached KNIME Rest API")
+
+    logger.info("Start log reader thread")
+    LogReaderThread(q, config, logger).start()
 
     # Create backup folder if it does not exist
     backup_path = config["workflow_backup_path"]
@@ -237,7 +237,11 @@ def main() -> None:
             audit_path=''.join(os.path.split(knwf_file_path)[:-1])  # Path to backup job folder
         )
         logger.info(f"Send audit info for job {job_id}")
-        Container(AuditSender(audit_info, config, logger)).run()
+        try:
+            Container(AuditSender(audit_info, config, logger)).run()
+        except Exception as e:
+            logger.exception(f"Error exception while sending audit message. {e}")
+            raise e
 
 
 if __name__ == '__main__':
