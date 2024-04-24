@@ -1,4 +1,5 @@
 import logging
+import sys
 
 import requests
 
@@ -31,6 +32,8 @@ class KnimeRestApi:
         url = f"{self.base_url}/jobs/"
         self.logger.debug(f"Performing API call to {url}")
         response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        if not response.ok:
+            self.logger.error(f"API call exception: {response.status_code}. {response.text}")
         return response.json()
 
     def get_job_info(self, job_id: str) -> dict:
@@ -42,6 +45,8 @@ class KnimeRestApi:
         url = f"{self.base_url}/jobs/{job_id}"
         self.logger.debug(f"Performing API call to {url}")
         response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        if not response.ok:
+            self.logger.error(f"API call exception: {response.status_code}. {response.text}")
         return response.json()
 
     def get_workflow_summary(self, job_id: str) -> dict:
@@ -52,6 +57,8 @@ class KnimeRestApi:
         url = f"{self.base_url}/jobs/{job_id}/workflow-summary?format=JSON&includeExecutionInfo=true"
         self.logger.debug(f"Performing API call to {url}")
         response = requests.get(url, headers={"accept": "application/json"}, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        if not response.ok:
+            self.logger.error(f"API call exception: {response.status_code}. {response.text}")
         return response.json()
 
     def download_workflow_data(self, path: str) -> bytes:
@@ -63,6 +70,8 @@ class KnimeRestApi:
         url = f"{self.base_url}/repository/{path}:data"
         self.logger.debug(f"Performing API call to {url}")
         response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        if not response.ok:
+            self.logger.error(f"API call exception: {response.status_code}. {response.text}")
         return response.content
 
     def trigger_swap(self, job_id: str) -> None:
@@ -73,7 +82,9 @@ class KnimeRestApi:
         """
         url = f"{self.base_url}/jobs/{job_id}/swap"
         self.logger.debug(f"Performing API call to {url}")
-        requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        response = requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        if not response.ok:
+            self.logger.error(f"API call exception: {response.status_code}. {response.text}")
 
     def copy_job_in_repo(self, job_id: str, path: str) -> None:
         """
@@ -83,7 +94,9 @@ class KnimeRestApi:
         """
         url = f"{self.base_url}/repository/{path}:data?from-job={job_id}"
         self.logger.debug(f"Performing API call to {url}")
-        requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        response = requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        if not response.ok:
+            self.logger.error(f"API call exception: {response.status_code}. {response.text}")
 
     def delete_workflow_data(self, path: str) -> None:
         """
@@ -92,4 +105,6 @@ class KnimeRestApi:
         """
         url = f"{self.base_url}/repository/{path}"
         self.logger.debug(f"Performing API call to {url}")
-        requests.delete(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        response = requests.delete(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        if not response.ok:
+            self.logger.error(f"API call exception: {response.status_code}. {response.text}")
