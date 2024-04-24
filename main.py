@@ -30,7 +30,19 @@ def load_config() -> dict:
         print('    ./main.py [JSON configuration file]')
         sys.exit()
 
-    return json.loads(open(sys.argv[1]).read())
+    config = json.loads(open(sys.argv[1]).read())
+
+    # Check if files in config exist
+    if config["ca_cert_file"] and not os.path.isfile(config["ca_cert_file"]):
+        raise FileNotFoundError(f"CA cert file not found: {config['ca_cert_file']}. Remember using full paths.")
+    if config["cert_file"] and not os.path.isfile(config["cert_file"]):
+        raise FileNotFoundError(f"Cert file not found: {config['cert_file']}. Remember using full paths.")
+    if config["key_file"] and not os.path.isfile(config["key_file"]):
+        raise FileNotFoundError(f"Cert file not found: {config['key_file']}. Remember using full paths.")
+    if config["key_password"] and not os.path.isfile(config["key_password"]):
+        raise FileNotFoundError(f"Key file not found: {config['key_password']}. Remember using full paths.")
+
+    return config
 
 
 def configure_logger(config: dict) -> logging.Logger:
