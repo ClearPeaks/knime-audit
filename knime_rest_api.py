@@ -23,6 +23,16 @@ class KnimeRestApi:
         self.timeout = config["knime_rest_api_timeout_seconds"]
         self.logger = logger
 
+    def list_jobs(self) -> dict:
+        """
+        List all jobs managed by this KNIME Server
+        :return: jobs information in dict
+        """
+        url = f"{self.base_url}/jobs/"
+        self.logger.debug(f"Performing API call to {url}")
+        response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
+        return response.json()
+
     def get_job_info(self, job_id: str) -> dict:
         """
         Get job information from a finished job_id
@@ -30,7 +40,7 @@ class KnimeRestApi:
         :return: job information in dict
         """
         url = f"{self.base_url}/jobs/{job_id}"
-        self.logger.info(f"Performing API call to {url}")
+        self.logger.debug(f"Performing API call to {url}")
         response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
         return response.json()
 
@@ -40,7 +50,7 @@ class KnimeRestApi:
         :return: workflow summary in dict
         """
         url = f"{self.base_url}/jobs/{job_id}/workflow-summary?format=JSON&includeExecutionInfo=true"
-        self.logger.info(f"Performing API call to {url}")
+        self.logger.debug(f"Performing API call to {url}")
         response = requests.get(url, headers={"accept": "application/json"}, auth=self.auth, verify=self.verify, timeout=self.timeout)
         return response.json()
 
@@ -51,7 +61,7 @@ class KnimeRestApi:
         :return: workflow .knwf file from response as bytes
         """
         url = f"{self.base_url}/repository/{path}:data"
-        self.logger.info(f"Performing API call to {url}")
+        self.logger.debug(f"Performing API call to {url}")
         response = requests.get(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
         return response.content
 
@@ -62,7 +72,7 @@ class KnimeRestApi:
         :param job_id: job_id
         """
         url = f"{self.base_url}/jobs/{job_id}/swap"
-        self.logger.info(f"Performing API call to {url}")
+        self.logger.debug(f"Performing API call to {url}")
         requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
 
     def copy_job_in_repo(self, job_id: str, path: str) -> None:
@@ -72,7 +82,7 @@ class KnimeRestApi:
         :param path: server path to store the workflow files
         """
         url = f"{self.base_url}/repository/{path}:data?from-job={job_id}"
-        self.logger.info(f"Performing API call to {url}")
+        self.logger.debug(f"Performing API call to {url}")
         requests.put(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)
 
     def delete_workflow_data(self, path: str) -> None:
@@ -81,5 +91,5 @@ class KnimeRestApi:
         :param path: workflow path
         """
         url = f"{self.base_url}/repository/{path}"
-        self.logger.info(f"Performing API call to {url}")
+        self.logger.debug(f"Performing API call to {url}")
         requests.delete(url, headers=self.headers, auth=self.auth, verify=self.verify, timeout=self.timeout)

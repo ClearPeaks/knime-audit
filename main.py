@@ -190,7 +190,10 @@ def main() -> None:
     logger.info("Start log reader thread")
     LogReaderThread(q, config, logger).start()
 
+    logger.info("Initializing KNIME Rest API object")
     knime_rest_api = KnimeRestApi(config, logger)
+    knime_rest_api.list_jobs()  # test if connectivity fails
+    logger.info("Successfully reached KNIME Rest API")
 
     # Create backup folder if it does not exist
     backup_path = config["workflow_backup_path"]
