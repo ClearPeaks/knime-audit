@@ -42,7 +42,7 @@ With root privileges do the following:
 4. Ensure you have a valid Python3 environment with the requirements mentioned above installed.  
 5. Enable the service: 
     ```shell
-    cp knime-audit.service /etc/systemd/system/
+    cp knime_audit.service /etc/systemd/system/
     systemctl daemon-reload
-    systemctl enable knime-audit.service
+    systemctl enable knime_audit.service
     ```
