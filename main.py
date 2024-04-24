@@ -39,7 +39,7 @@ def configure_logger(config: dict) -> logging.Logger:
     :param config: configuration settings
     :return: logger
     """
-    logger = logging.getLogger("knime_executor_per_user_starter")
+    logger = logging.getLogger("knime_audit")
     logger.setLevel(getattr(logging, config['log_level'].upper()))
     handler = TimedRotatingFileHandler(config['log_file'], when=config['log_rotation_when'],
                                        interval=config['log_rotation_interval'],
