@@ -68,6 +68,7 @@ def generate_job_backup(
         job_info: dict,
         workflow_summary: dict,
         workflow_backup_parent_path: str,
+        workflow_timestamp: datetime,
         knime_rest_api: KnimeRestApi,
         logger: logging.Logger) -> str:
     """
@@ -85,12 +86,12 @@ def generate_job_backup(
     :param job_info: information about the job extracted with the API get_job_info
     :param workflow_summary: summary about the job extracted with the API get_workflow_summary
     :param workflow_backup_parent_path: parent folder where backups are stored
+    :param workflow_timestamp: datetime when workflow is being processed (it is close to the execution finished timestamp)
     :param knime_rest_api: class to interact with the Knime REST API
     :param logger: logger
     :return: path where .knwf is being stored
     """
     # Create backup daily folder
-    workflow_timestamp = datetime.strptime(job_info["createdAt"].split(".")[0], "%Y-%m-%dT%H:%M:%S")
     workflow_backup_daily_path = os.path.join(
         workflow_backup_parent_path,
         workflow_timestamp.strftime("%Y%m%d")
@@ -155,25 +156,26 @@ def extract_knwf_info(
     # Process unzipped information
     settings_paths = []
     xml_path_value = '<entry key="path" type="xstring" value="'  # Value to look in settings.xml
+    logger.info("Processing all settings.xml to extract paths")
     for root, dirs, files in os.walk(os.path.join(knwf_output_folder, workflow_name)):
         # Remove unnecessary files
         for f in files:
             if f not in files_to_keep:
                 file_to_remove = os.path.join(root, f)
-                logger.info(f"Remove file {file_to_remove}")
+                logger.debug(f"Remove file {file_to_remove}")
                 os.remove(file_to_remove)
 
         # Get all paths in all inner settings.xml
         if len(settings_paths) < max_paths:
             settings_path = os.path.join(root, "settings.xml")
             if os.path.isfile(settings_path):
-                logger.info(f"Read {settings_path} to extract paths")
+                logger.debug(f"Read {settings_path} to extract paths")
                 with open(settings_path, "r") as f:
                     # Find path entry in settings.xml
                     paths_in_dir = [
                         line.replace(xml_path_value, "").replace('"/>', "").strip()
                         for line in f.readlines() if xml_path_value in line]
-                    logger.info(f"\tPaths found: {paths_in_dir}")
+                    logger.debug(f"\tPaths found: {paths_in_dir}")
                     settings_paths.extend(paths_in_dir)
         else:
             # Add ... to indicate that there are actually more paths (only add ... once)
@@ -217,6 +219,7 @@ def main() -> None:
     for job_id in iter(q.get, None):
         try:
             logger.info(f"Processing job: {job_id}")
+            now = datetime.now(datetime.now().astimezone().tzinfo)
             # Get job information & workflow summary
             job_info = knime_rest_api.get_job_info(job_id)
             workflow_summary = knime_rest_api.get_workflow_summary(job_id)
@@ -226,6 +229,7 @@ def main() -> None:
                 job_info,
                 workflow_summary,
                 backup_path,
+                now,
                 knime_rest_api,
                 logger
             )
@@ -245,7 +249,7 @@ def main() -> None:
                 user_id=job_info["owner"],
                 host=socket.gethostname(),
                 workflow_state=job_info["state"],
-                workflow_timestamp=job_info["createdAt"].split("[")[0],
+                workflow_timestamp=now.isoformat(),
                 error_message=job_info["nodeMessages"][-1]["message"] if "nodeMessages" in job_info and len(job_info["nodeMessages"]) > 0 else "",
                 paths=paths,
                 audit_path=''.join(os.path.split(knwf_file_path)[:-1])  # Path to backup job folder
