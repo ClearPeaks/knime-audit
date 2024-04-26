@@ -49,6 +49,5 @@ class AuditInfo:
             <timestamp>{self.workflow_timestamp}</timestamp>
         </action>
     </auditEvent>
-</auditEventList>
-        """
+</auditEventList>"""
         return xml
