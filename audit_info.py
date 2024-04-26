@@ -28,28 +28,27 @@ class AuditInfo:
         Convert class into specific audit XML string.
         :return: XML as string
         """
-        xml = f"""
-        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-        <auditEventList xmlns="http://www.example.com/AuditEvent">
-            <auditEvent>
-                <actor>
-                    <id>{self.user_id}</id>
-                    <name>{self.user_id}</name>
-                </actor>
-                <application>
-                    <component>KNIME Server</component>
-                    <hostName>{self.host}</hostName>
-                    <name>KNIME</name>
-                </application>
-                 <action>
-                    <actionType>{self.workflow_state}</actionType>
-                    <additionalInfo name="jobId">{self.job_id}</additionalInfo>
-                    <additionalInfo name="errorMessage">{self.error_message}</additionalInfo>
-                    <additionalInfo name="paths">{','.join(self.paths)}</additionalInfo>
-                    <additionalInfo name="audit_path">{self.audit_path}</additionalInfo>
-                    <timestamp>{self.workflow_timestamp}</timestamp>
-                </action>
-            </auditEvent>
-        </auditEventList>
+        xml = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<auditEventList xmlns="http://www.example.com/AuditEvent">
+    <auditEvent>
+        <actor>
+            <id>{self.user_id}</id>
+            <name>{self.user_id}</name>
+        </actor>
+        <application>
+            <component>KNIME Server</component>
+            <hostName>{self.host}</hostName>
+            <name>KNIME</name>
+        </application>
+         <action>
+            <actionType>{self.workflow_state}</actionType>
+            <additionalInfo name="jobId">{self.job_id}</additionalInfo>
+            <additionalInfo name="errorMessage">{self.error_message}</additionalInfo>
+            <additionalInfo name="paths">{','.join(self.paths)}</additionalInfo>
+            <additionalInfo name="audit_path">{self.audit_path}</additionalInfo>
+            <timestamp>{self.workflow_timestamp}</timestamp>
+        </action>
+    </auditEvent>
+</auditEventList>
         """
         return xml
