@@ -26,11 +26,11 @@ class AuditInfo:
 
     def escape_field(self, field: str) -> str: 
         if field:
-            ichars = {'<' : '&lt','>' : '&gt',"'" : '&apos','"' : '&quot'}
+            ichars = {'<' : '&lt;','>' : '&gt;',"'" : '&apos;','"' : '&quot;'}
             nfield = ''
             for i in range(len(field)):
-                if field[i] == '&' and field[i:i+4] != '&amp' and field[i:i+3] != '&lt' and field[i:i+3] != '&gt' and field[i:i+5] != '&apos' and field[i:i+5] != '&quot':
-                    nfield += '&amp'
+                if field[i] == '&' and field[i:i+5] != '&amp;' and field[i:i+4] != '&lt;' and field[i:i+4] != '&gt;' and field[i:i+6] != '&apos;' and field[i:i+6] != '&quot;':
+                    nfield += '&amp;'
                 elif field[i] in ichars:
                     nfield += ichars[field[i]]
                 else:
