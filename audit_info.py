@@ -21,7 +21,7 @@ class AuditInfo:
         self.workflow_timestamp = self.escape_field(workflow_timestamp)
         self.error_message = self.escape_field(error_message)
         if paths:
-            self.paths = [self.escape_field(e) for e in a]
+            self.paths = [self.escape_field(e) for e in paths]
         self.audit_path = self.escape_field(audit_path)
 
     def escape_field(self, field: str) -> str: 
