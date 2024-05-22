@@ -14,14 +14,15 @@ class AuditInfo:
             paths: List[str],
             audit_path: str
     ) -> None:
-        self.job_id = job_id
-        self.user_id = user_id
-        self.host = host
-        self.workflow_state = workflow_state
-        self.workflow_timestamp = workflow_timestamp
-        self.error_message = error_message
-        self.paths = paths
-        self.audit_path = audit_path
+        self.job_id = self.escape_field(job_id)
+        self.user_id = self.escape_field(user_id)
+        self.host = self.escape_field(host)
+        self.workflow_state = self.escape_field(workflow_state)
+        self.workflow_timestamp = self.escape_field(workflow_timestamp)
+        self.error_message = self.escape_field(error_message)
+        if paths:
+            self.paths = [self.escape_field(e) for e in a]
+        self.audit_path = self.escape_field(audit_path)
 
     def escape_field(self, field: str) -> str: 
         if field:
@@ -61,9 +62,9 @@ class AuditInfo:
          <action>
             <actionType>{self.workflow_state}</actionType>
             <additionalInfo name="jobId">{self.job_id}</additionalInfo>
-            <additionalInfo name="errorMessage">{self.escape_field(self.error_message})</additionalInfo>
-            <additionalInfo name="paths">{self.escape_field(','.join(self.paths))}</additionalInfo>
-            <additionalInfo name="audit_path">{self.escape_field(self.audit_path)}</additionalInfo>
+            <additionalInfo name="errorMessage">{self.error_message}</additionalInfo>
+            <additionalInfo name="paths">{','.join(self.paths)}</additionalInfo>
+            <additionalInfo name="audit_path">{self.audit_path}</additionalInfo>
             <timestamp>{self.workflow_timestamp}</timestamp>
         </action>
     </auditEvent>
